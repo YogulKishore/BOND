@@ -9,9 +9,20 @@ from routers.async_router import router as async_router
 
 app = FastAPI(title="BOND API")
 
+import os
+
+_allowed_origins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://bond-sable.vercel.app",
+]
+_extra = os.environ.get("ALLOWED_ORIGIN")
+if _extra:
+    _allowed_origins.append(_extra)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174"],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
