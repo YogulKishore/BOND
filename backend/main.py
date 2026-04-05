@@ -6,10 +6,9 @@ from routers.chat_router import router as chat_router
 from routers.session_router import router as session_router
 from routers.profile_router import router as profile_router
 from routers.async_router import router as async_router
+import os
 
 app = FastAPI(title="BOND API")
-
-import os
 
 _allowed_origins = [
     "http://localhost:5173",
@@ -23,6 +22,7 @@ if _extra:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
