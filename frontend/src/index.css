@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --grain-opacity: 0.035;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background-color: #f5efe6;
+  color: #1a1510;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cfc0ae; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #b8956a; }
+
+/* Selection */
+::selection {
+  background: #c4714a25;
+  color: #1a1510;
+}
+
+/* Focus */
+:focus-visible {
+  outline: 2px solid #c4714a60;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Input base */
+input, textarea {
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+input:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(196,113,74,0.12);
+}
+
+/* Utility classes */
+.font-display {
+  font-family: 'Lora', Georgia, serif;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Skeleton shimmer */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #ede4d8 25%,
+    #e0d4c4 50%,
+    #ede4d8 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Card surface */
+.surface {
+  background: rgba(255,252,248,0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #cfc0ae50, transparent);
+}
+
+/* Phase dot pulse */
+@keyframes phasePulse {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+  50% { box-shadow: 0 0 0 4px transparent; opacity: 0.7; }
+}
+
+.phase-dot-active {
+  animation: phasePulse 2.5s ease-in-out infinite;
+}
+
+/* Button press feedback */
+button:not(:disabled) {
+  transition-property: transform, opacity, background-color, border-color, color, box-shadow;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* Slightly stronger press for primary action buttons */
+button.press-strong:not(:disabled):active {
+  transform: scale(0.95);
+}
+
+/* Link-style buttons shouldn't scale */
+button.no-press:active {
+  transform: none;
+}
+
+
+/* ── Page transitions ──────────────────────────────────────────── */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: pageEnter 0.35s ease-out forwards;
+}
+
+@keyframes pageExit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.page-exiting {
+  animation: pageExit 0.2s ease-out forwards;
+  pointer-events: none;
+}

@@ -1,0 +1,8 @@
+.env
+*.db
+rag/
+__pycache__/
+*.pyc
+.venv/
+venv/
+config.json
