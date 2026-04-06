@@ -64,7 +64,7 @@ async def send_message(req: MessageRequest):
                 session = Session(
                     id=generate_id(),
                     couple_id=req.couple_id,
-                    session_type="individual",
+                    session_type="shared",
                     initiated_by=user_id,
                     is_active=True
                 )
@@ -225,7 +225,7 @@ async def send_message(req: MessageRequest):
             couple_id=req.couple_id,
             speaker_name=req.speaker_name,
             message=req.message,
-            session_type="individual",
+            session_type="shared",
             recent_messages=all_messages,
             user_id=user_id,
             mediation_phase="listening",
