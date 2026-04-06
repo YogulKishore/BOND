@@ -233,7 +233,20 @@ export default function Chat() {
             setMessages([])
           }
         } else {
-          setMessages([])
+          // Fresh individual session — BOND opens first
+          if (sessionType === 'individual') {
+            const _openers = [
+              "Hey — what's been going on?",
+              "Good to have you here. What happened?",
+              "Hey — tell me what's going on.",
+              "What's been on your mind?",
+              "Hey — what's going on with you?",
+            ]
+            const opener = _openers[Math.floor(Math.random() * _openers.length)]
+            setMessages([{ role: 'ai', sender: 'BOND', content: opener }])
+          } else {
+            setMessages([])
+          }
         }
       }
     }
