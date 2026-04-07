@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from models.database import User, Couple, generate_id, SessionLocal
+from sqlalchemy import text
 from config import get_settings
 import bcrypt
 import random
@@ -100,6 +101,9 @@ def join_couple(db: Session, user_id: str, invite_code: str) -> dict:
     for c in user.couples[:]:
         if len(c.users) == 1:
             user.couples.remove(c)
+            # Delete dependent rows first to avoid FK violations in Postgres
+            db.execute(text("DELETE FROM memories WHERE couple_id = :cid"), {"cid": c.id})
+            db.execute(text("DELETE FROM user_couple WHERE couple_id = :cid"), {"cid": c.id})
             db.delete(c)
 
     user.couples.append(couple)
