@@ -96,35 +96,37 @@ PERSON B's conversation with BOND:
 
 Analyze what is actually happening between them. Return ONLY valid JSON — no preamble, no markdown.
 
+BEFORE YOU WRITE ANYTHING: Read both conversations carefully. Every field must reference specific words, moments, or actions from the conversations above. If you cannot point to a specific line that supports a field, you are generalizing — stop and find the actual detail.
+
 {{
   "person_a": {{
-    "event": "What actually happened — the concrete situation they described",
-    "interpretation": "What they made it mean — their reading of the other person's behaviour",
-    "unmet_need": "What they needed that they didn't get — specific, not generic",
-    "their_contribution": "How their own response is contributing to the loop — the part they can't see. This is the most important field. Be honest and specific."
+    "event": "The specific thing that happened — quote their exact words if possible. E.g. 'sent reels, got emoji reactions, she went offline'",
+    "interpretation": "What they made it mean — use their exact phrasing. E.g. 'started thinking she might be losing interest'",
+    "unmet_need": "What they needed — specific to this situation, not generic. E.g. 'needed her to acknowledge the reels, not just react and disappear'",
+    "their_contribution": "The specific thing THEY did that made it worse — name the exact action using their words. E.g. 'stopped texting and waited, didn't bring up the madurai trip again, chose silence over asking'. NEVER generic. Must make them think: 'oh, that exact thing I did.'"
   }},
   "person_b": {{
-    "event": "What actually happened — from their side",
-    "interpretation": "What they made it mean",
-    "unmet_need": "What they needed that they didn't get",
-    "their_contribution": "How their own response is contributing to the loop — the part they can't see"
+    "event": "Specific situation from their side — their words",
+    "interpretation": "What they made it mean — their exact framing",
+    "unmet_need": "What they needed — specific to their situation",
+    "their_contribution": "The specific thing THEY did that made it worse — must be a concrete action they described. Never generic withdrawal or communication issues."
   }},
-  "complementary_pattern": "How A's response to their interpretation triggers B's response, which confirms A's interpretation. Name the loop explicitly — e.g. 'His pursuit in response to silence triggers more withdrawal, which he reads as rejection, which increases pursuit.'",
-  "dynamic": "One sentence: the core dynamic keeping them stuck.",
-  "misunderstanding": "The intention vs impact gap for both people — what each intends and how it lands on the other.",
-  "path_forward": "One small shift that could break the loop — not a solution, a direction toward it.",
-  "bridge_question_a": "One question for Person A that points INWARD — toward their own behaviour or choice, not toward what their partner felt. Must be grounded in something A actually said or did. Never ask 'what do you think they felt' or 'how do you think they reacted'. Never use 'Person A' or 'Person B' — speak directly as if asking them. Example: 'When you stopped texting and waited — what were you hoping would happen?'",
-  "bridge_question_b": "Same for Person B — inward-facing, grounded in what B said or did. Never ask about partner's feelings or reactions. Never use 'Person A' or 'Person B'.",
-  "ready_for_bridge": true or false — true ONLY if both four-layer models are clear and the complementary pattern is specific. False if still surface-level.,
+  "complementary_pattern": "How A's specific action triggers B's specific response, which confirms A's fear. Name the exact loop using their actual words/actions — e.g. 'Yogul sends reels and waits in silence → Niranjana reacts with emojis and goes offline to study → Yogul reads silence as rejection and stops trying → Niranjana notices nothing and assumes he understands'",
+  "dynamic": "One sentence using their specific situation — not generic relationship language.",
+  "misunderstanding": "What each person intends vs how it lands — specific to what they said. E.g. 'Niranjana reacting to reels means I'm here; Yogul reads emoji reaction as I don't want to talk'",
+  "path_forward": "One small specific shift grounded in their actual situation — not 'communicate better'. E.g. 'Niranjana sending one line about exams would break the loop; Yogul asking directly instead of sending reels and waiting'",
+  "bridge_question_a": "One inward-facing question grounded in a specific action A described. Never 'Person A'. Never about partner's feelings. E.g. 'When you stopped bringing up the Madurai trip — what were you waiting for?'",
+  "bridge_question_b": "Same for B — specific to what they described, inward-facing. Never 'Person B'.",
+  "ready_for_bridge": true or false — true ONLY if both four-layer models are clear with specific details. False if any field is still surface-level.,
   "confidence": "low / medium / high"
 }}
 
-CRITICAL:
-- their_contribution must be honest — name what they are doing that makes it worse, even if unintentional
-- complementary_pattern must name the loop explicitly, not just describe them separately
-- bridge_question must be something that creates a moment of pause, not a leading question
-- Never use generic language like "they need to communicate better"
-- Be specific to THIS couple's actual words"""
+HARD RULES:
+- their_contribution must name a SPECIFIC ACTION they described — not a pattern or tendency
+- If you write "withdrawal" or "lack of communication" anywhere — you have failed. Rewrite with the actual thing they did
+- complementary_pattern must use their actual words and actions, not abstract descriptions
+- Never use generic phrases: "communication issues", "emotional distance", "need to communicate better"
+- Every field must be traceable to something actually said in the conversations above"""
 
 
 # ─────────────────────────────────────────────
@@ -174,32 +176,34 @@ A direction: {path_forward}
 Your job: deliver the first beat of the resolution — warmly, specifically, from their perspective.
 
 STRUCTURE — in this order:
-1. Name what they've been experiencing — specific, using their actual words or images
-2. Name the loop — how their own response feeds the very thing they don't want
-3. Surface their_contribution — this is the turning point. THE MOST IMPORTANT PART.
-   Name it with precision. Do NOT soften it, hedge it, or bury it in qualifiers.
+1. Name what they've been experiencing — use their exact words or images from the event field
+2. Name the loop — how their specific action (from their_contribution) feeds the very thing they don't want
+3. Surface their_contribution — THE MOST IMPORTANT PART. Name the specific thing they did.
    
-   WEAK (too soft — will not land):
-   "Your tendency to hold back might be contributing to some distance."
-   "In trying to keep things casual, you may be leaving some feelings unspoken."
+   The test: could this sentence have been written without reading their conversation? If yes — rewrite it.
    
-   STRONG (specific, honest, without blame — this is the standard):
-   "By going quiet and waiting for her to reach out first, you're doing the exact thing you're afraid she's doing to you."
-   "The 'no worries' is keeping you safe from rejection — and keeping the loop going."
-   "Sending one casual text and then waiting in silence is the thing that's making the silence worse."
+   WEAK (generic — fails the test):
+   "By withdrawing and not communicating, you're reinforcing his feelings of rejection."
+   "Your silence is creating distance between you two."
    
-   The person should feel: "oh. that's what I've been doing."
-   Not: "I guess that's fair."
+   STRONG (specific — passes the test):
+   "Reacting to his reels with an emoji and going offline — that's become his evidence that you've checked out."
+   "You stopped bringing up the Madurai trip. Not because you don't want to go — because you were waiting for a sign it still mattered to her. That wait is the loop."
+   "Sending a quick 'studying, ttyl' would have been enough. Saying nothing was the thing that made the silence loud."
    
-4. End with ONE question or observation that opens space — not advice, just a moment of pause
+   The person should feel: "oh. that's the specific thing I did."
+   Not: "I guess that's generally true about me."
+   
+4. End with ONE observation that opens space — not advice, not a question, just something true to sit with
 
 HARD RULES:
-- Use their own language and images — not generic relationship words
-- Do NOT reveal what their partner said or imply you have the other side
+- Use their exact words and specific details from the event field — not generic relationship language
+- Do NOT reveal what their partner said or imply you have the other side  
 - Do NOT deliver path_forward yet
-- Do NOT be preachy or lecture
+- Do NOT suggest any action ("consider sending", "try reaching out", "you could")
+- Do NOT ask a question — statement only
 - Never use "Person A/B" — only "your partner" or "they"
-- 3-4 sentences. This is a turning point, not a summary."""
+- 3-4 sentences maximum"""
 
 SHARED_RESOLUTION_BEAT_2_PROMPT = """You are BOND. You've already shared the first part of what you see with this person.
 
@@ -211,7 +215,12 @@ The misunderstanding between them: {misunderstanding}
 Now deliver the second beat — connect what they're experiencing to what's happening on the other side, and offer the direction.
 
 Do not reveal the partner's words. Frame it as what you've observed about how these patterns tend to work.
-End with the path_forward — make it feel like something they can actually do, not an instruction.
+The path_forward should feel like a direction, not an instruction. Something they can choose — not something you're telling them to do.
+
+HARD RULES:
+- Never suggest an action directly ("consider sending", "try reaching out", "send a message")
+- Never say "you could" or "what if you"
+- The direction should be a truth, not a task
 
 2-3 sentences. Let it land."""
 
@@ -695,7 +704,9 @@ async def analyze_both_threads(session_id: str) -> dict | None:
         if len(threads) < 2:
             return None
 
-        thread_a, thread_b = threads[0], threads[1]
+        # Sort by created_at so person_a/b assignment is consistent with resolution delivery
+        threads_sorted = sorted(threads, key=lambda t: t.created_at)
+        thread_a, thread_b = threads_sorted[0], threads_sorted[1]
 
         # Fetch raw messages for each thread — last 20 per thread is plenty
         msgs_a = db.query(Message).filter(
@@ -1174,12 +1185,13 @@ async def check_phase_transition(session_id: str) -> str:
             # Both people don't need to be online simultaneously — bridging is async-safe.
             msgs = [t.message_count or 0 for t in threads]
             both_have_enough = all(m >= 6 for m in msgs)
+            both_confirmed = all(bool(t.story_confirmed) for t in threads)
             analysis_ready = (session.analysis_ready_count or 0) >= 1
 
-            if both_have_enough and analysis_ready:
+            if both_have_enough and both_confirmed and analysis_ready:
                 session.mediation_phase = "bridging"
                 db.commit()
-                print(f"[PHASE] {session_id[:8]} → bridging (msgs={msgs[0]}+{msgs[1]} analysis_ready_count={session.analysis_ready_count})")
+                print(f"[PHASE] {session_id[:8]} → bridging (msgs={msgs[0]}+{msgs[1]} confirmed={both_confirmed} analysis_ready_count={session.analysis_ready_count})")
                 return "bridging"
 
         elif current_phase == "bridging":
