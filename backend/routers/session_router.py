@@ -971,6 +971,18 @@ def get_sessions(couple_id: str, token: str):
                     Thread.session_id == s.id, Thread.user_id == user_id,
                 ).first()
                 if not thread:
+                    # No thread yet — only include if active and partner started it
+                    # so Niranjana can see Yogul's session as a notification
+                    if s.is_active and s.initiated_by != user_id:
+                        result.append({
+                            "id": s.id,
+                            "session_type": s.session_type,
+                            "created_at": s.created_at.isoformat(),
+                            "last_message": None,
+                            "is_active": True,
+                            "mediation_phase": s.mediation_phase,
+                            "initiated_by": s.initiated_by,
+                        })
                     continue
                 last_msg = db.query(Message).filter(
                     Message.thread_id == thread.id
