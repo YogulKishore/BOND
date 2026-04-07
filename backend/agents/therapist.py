@@ -251,9 +251,10 @@ CURRENT MESSAGE:
 # LLM
 # ─────────────────────────────────────────────
 
-def get_llm(temperature: float = 0.65):
+def get_llm(temperature: float = 0.65, strong: bool = False):
+    model = settings.strong_model if strong else settings.primary_model
     return ChatOpenAI(
-        model=settings.primary_model,
+        model=model,
         api_key=settings.openai_api_key,
         temperature=temperature
     )
@@ -1090,7 +1091,7 @@ async def get_ai_response(
                 msgs.append(SystemMessage(content=brief))
             msgs.append(HumanMessage(content=f"{speaker_name}: {message}"))
 
-            llm = get_llm()
+            llm = get_llm(strong=mediation_phase in ("integration", "resolution", "bridging"))
             try:
                 response = await llm.ainvoke(msgs)
                 text = response.content.strip()

@@ -219,6 +219,13 @@ export default function Chat() {
         }
         ws.onerror = () => {}
         wsRef.current = ws
+
+        // Heartbeat — keeps connection alive on Render free tier
+        const heartbeat = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'ping' }))
+          }
+        }, 20000)
       } else {
         const urlSessionId = searchParams.get('session_id')
         const storedSessionId = localStorage.getItem(sessionStorageKey)
@@ -269,6 +276,7 @@ export default function Chat() {
     document.addEventListener('visibilitychange', handleVisibility)
     return () => {
       wsRef.current?.close()
+      if (typeof heartbeat !== 'undefined') clearInterval(heartbeat)
       document.removeEventListener('visibilitychange', handleVisibility)
       if (_endTimerRef.current) clearTimeout(_endTimerRef.current)
     }

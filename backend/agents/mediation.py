@@ -21,9 +21,10 @@ import json
 settings = get_settings()
 
 
-def get_llm(temperature: float = 0.45):
+def get_llm(temperature: float = 0.45, strong: bool = False):
+    model = settings.strong_model if strong else settings.primary_model
     return ChatOpenAI(
-        model=settings.primary_model,
+        model=model,
         api_key=settings.openai_api_key,
         temperature=temperature
     )
@@ -345,9 +346,10 @@ YES or NO:"""
 # LLM
 # ─────────────────────────────────────────────
 
-def get_llm(temperature: float = 0.45):
+def get_llm(temperature: float = 0.45, strong: bool = False):
+    model = settings.strong_model if strong else settings.primary_model
     return ChatOpenAI(
-        model=settings.primary_model,
+        model=model,
         api_key=settings.openai_api_key,
         temperature=temperature
     )
@@ -766,7 +768,7 @@ async def analyze_both_threads(session_id: str) -> dict | None:
             thread_a=thread_a_text,
             thread_b=thread_b_text,
         )
-        llm = get_llm(temperature=0.2)
+        llm = get_llm(temperature=0.2, strong=True)
         response = await llm.ainvoke([HumanMessage(content=prompt)])
         parsed = _parse_json_safe(response.content)
 
@@ -1262,7 +1264,7 @@ async def generate_resolution_message(session_id: str, user_id: str) -> str | No
         misunderstanding=analysis.get("misunderstanding", ""),
         path_forward=analysis.get("path_forward", ""),
     )
-    llm = get_llm(temperature=0.5)
+    llm = get_llm(temperature=0.5, strong=True)
     try:
         response = await llm.ainvoke([HumanMessage(content=prompt)])
         return response.content.strip()
@@ -1286,7 +1288,7 @@ async def generate_resolution_beat_2(session_id: str, user_id: str, beat_1: str,
         path_forward=analysis.get("path_forward", ""),
         misunderstanding=analysis.get("misunderstanding", ""),
     )
-    llm = get_llm(temperature=0.5)
+    llm = get_llm(temperature=0.5, strong=True)
     try:
         response = await llm.ainvoke([HumanMessage(content=prompt)])
         return response.content.strip()
@@ -1390,7 +1392,7 @@ async def generate_closing_reflection(thread_id: str, resolution_message: str) -
             resolution_message=resolution_message,
             integration_summary=integration_summary
         )
-        llm = get_llm(temperature=0.55)
+        llm = get_llm(temperature=0.55, strong=True)
         response = await llm.ainvoke([HumanMessage(content=prompt)])
         return response.content.strip()
     except Exception as e:

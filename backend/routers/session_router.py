@@ -188,8 +188,8 @@ async def _send_resolution_to_thread(
     db = SessionLocal()
     try:
         t = db.query(Thread).filter(Thread.id == thread_id).first()
-        if t and t.resolution_message:
-            return  # already delivered
+        if t and (t.resolution_message or t.resolution_pending):
+            return  # already delivered or in progress
     finally:
         db.close()
 
@@ -876,6 +876,9 @@ async def shared_session_ws(websocket: WebSocket, session_id: str, token: str):
     try:
         while True:
             data = json.loads(await websocket.receive_text())
+
+            if data.get("type") == "ping":
+                continue  # heartbeat — ignore
 
             if data.get("type") == "bridge_consent":
                 await _handle_consent(
