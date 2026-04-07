@@ -271,9 +271,9 @@ export default function Dashboard() {
   const partnerStartedSession = activeSessions.find(s => {
     if (s.session_type !== 'shared') return false
     if (!s.initiated_by || s.initiated_by === userId) return false
-    // Only show if started in the last 30 minutes
+    // Only show if started in the last 24 hours
     const ageMs = Date.now() - new Date(s.created_at).getTime()
-    return ageMs < 30 * 60 * 1000
+    return ageMs < 24 * 60 * 60 * 1000
   })
   const pastSessions = recentSessions.filter(s => !s.is_active)
 
