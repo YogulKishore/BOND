@@ -21,10 +21,9 @@ import json
 settings = get_settings()
 
 
-def get_llm(temperature: float = 0.45, strong: bool = False):
-    model = settings.strong_model if (strong and hasattr(settings, "strong_model")) else settings.primary_model
+def get_llm(temperature: float = 0.45):
     return ChatOpenAI(
-        model=model,
+        model=settings.primary_model,
         api_key=settings.openai_api_key,
         temperature=temperature
     )
@@ -336,6 +335,14 @@ YES or NO:"""
 # ─────────────────────────────────────────────
 # LLM
 # ─────────────────────────────────────────────
+
+def get_llm(temperature: float = 0.45):
+    return ChatOpenAI(
+        model=settings.primary_model,
+        api_key=settings.openai_api_key,
+        temperature=temperature
+    )
+
 
 # ─────────────────────────────────────────────
 # CONTEXT LOADER
@@ -1109,14 +1116,8 @@ def get_investigation_state(thread_id: str) -> dict:
 
 async def generate_bridge_lead_in(session_id: str, user_id: str) -> str | None:
     """
-    Generates the pre-bridge question for one person.
-    Called privately per person when they enter bridging phase.
-    Uses bridge_question_a or bridge_question_b from the latest analysis —
-    whichever is for this user's thread.
-
-    This question leads them toward seeing their own contribution
-    before BOND delivers the full resolution insight.
-    Not a leading question — a moment of pause.
+    Returns the pre-bridge question for one person directly from analysis.
+    No LLM wrapper — prevents hallucination of invented details.
     """
     analysis = get_latest_analysis(session_id)
     if not analysis:
@@ -1128,9 +1129,14 @@ async def generate_bridge_lead_in(session_id: str, user_id: str) -> str | None:
         if len(threads) < 2:
             return None
 
-        # Determine if this user is thread A or B
-        thread_a = threads[0]
-        is_person_a = thread_a.user_id == user_id
+        # Find which thread belongs to this user — don't rely on order
+        user_thread = next((t for t in threads if t.user_id == user_id), None)
+        if not user_thread:
+            return None
+
+        # person_a is whichever thread was created first
+        threads_sorted = sorted(threads, key=lambda t: t.created_at)
+        is_person_a = threads_sorted[0].user_id == user_id
 
         bridge_question = (
             analysis.get("bridge_question_a")
@@ -1141,23 +1147,8 @@ async def generate_bridge_lead_in(session_id: str, user_id: str) -> str | None:
         if not bridge_question:
             return None
 
-        # Wrap the question in a warm, natural opener
-        llm = get_llm(temperature=0.4, strong=True)
-        prompt = f"""You are BOND. You're about to ask someone one question before sharing what you've seen.
-The question should point INWARD — toward their own behavior, not outward toward their partner's reaction.
-The question is: "{bridge_question}"
-
-Write 1-2 sentences only:
-- Ask it directly, grounded in something specific they said
-- Point toward what THEY did or chose — not what their partner felt or did
-- Do NOT ask "how do you think they felt" or "what impact did that have on them" — those are outward
-- Do NOT announce you're about to say something
-- Never say "It sounds like", "I can understand", "That must be"
-- Never use their partner's name
-- Keep it short. One question only."""
-
-        response = await llm.ainvoke([HumanMessage(content=prompt)])
-        return response.content.strip()
+        print(f"[BRIDGE LEAD-IN] person_a={is_person_a} user={user_id[:8]} question={bridge_question[:60]}")
+        return bridge_question
 
     except Exception as e:
         print(f"[BRIDGE LEAD-IN ERROR] {e}")
@@ -1240,7 +1231,8 @@ async def generate_resolution_message(session_id: str, user_id: str) -> str | No
         partner_thread = next((t for t in threads if t.user_id != user_id), None)
         if not this_thread or not partner_thread:
             return None
-        is_person_a = threads[0].user_id == user_id
+        threads_sorted = sorted(threads, key=lambda t: t.created_at)
+        is_person_a = threads_sorted[0].user_id == user_id
     finally:
         db.close()
 
@@ -1263,7 +1255,7 @@ async def generate_resolution_message(session_id: str, user_id: str) -> str | No
         misunderstanding=analysis.get("misunderstanding", ""),
         path_forward=analysis.get("path_forward", ""),
     )
-    llm = get_llm(temperature=0.5, strong=True)
+    llm = get_llm(temperature=0.5)
     try:
         response = await llm.ainvoke([HumanMessage(content=prompt)])
         return response.content.strip()
@@ -1287,7 +1279,7 @@ async def generate_resolution_beat_2(session_id: str, user_id: str, beat_1: str,
         path_forward=analysis.get("path_forward", ""),
         misunderstanding=analysis.get("misunderstanding", ""),
     )
-    llm = get_llm(temperature=0.5, strong=True)
+    llm = get_llm(temperature=0.5)
     try:
         response = await llm.ainvoke([HumanMessage(content=prompt)])
         return response.content.strip()
@@ -1391,7 +1383,7 @@ async def generate_closing_reflection(thread_id: str, resolution_message: str) -
             resolution_message=resolution_message,
             integration_summary=integration_summary
         )
-        llm = get_llm(temperature=0.55, strong=True)
+        llm = get_llm(temperature=0.55)
         response = await llm.ainvoke([HumanMessage(content=prompt)])
         return response.content.strip()
     except Exception as e:
