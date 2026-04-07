@@ -1068,7 +1068,20 @@ def create_session(couple_id: str, session_type: str, token: str):
             session_number=past_count + 1,
         )
         db.add(session)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+
+        # Re-check after commit — another request may have committed first (race condition)
+        winner = db.query(Session).filter(
+            Session.couple_id == couple_id,
+            Session.session_type == session_type,
+            Session.is_active == True,
+        ).order_by(Session.created_at).first()
+        if winner:
+            return {"session_id": winner.id, "mediation_phase": winner.mediation_phase or "listening"}
+
         return {"session_id": session.id, "mediation_phase": "listening"}
     finally:
         db.close()

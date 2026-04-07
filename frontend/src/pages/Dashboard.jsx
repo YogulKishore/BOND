@@ -244,12 +244,20 @@ export default function Dashboard() {
       }
     } catch (e) {}
 
-    const activeShared = recentSessions.find(s => s.session_type === 'shared' && s.is_active)
+    // Check for existing active session first
+    const activeShared = recentSessions.find(s => s.session_type === 'shared' && s.is_active && s.initiated_by === userId)
     if (activeShared) {
       return navigate(`/chat/shared?couple_id=${freshCouple.id}&session_id=${activeShared.id}`)
     }
 
-    navigate(`/checkin?couple_id=${freshCouple.id}&session_type=shared`)
+    // Create session now so session_id is in the URL
+    try {
+      const res = await axios.post(`${BASE}/sessions/create?couple_id=${freshCouple.id}&session_type=shared&token=${token}`)
+      const sessionId = res.data.session_id
+      navigate(`/chat/shared?couple_id=${freshCouple.id}&session_id=${sessionId}`)
+    } catch (e) {
+      navigate(`/chat/shared?couple_id=${freshCouple.id}`)
+    }
   }
 
   const activeSessions = recentSessions.filter(s => s.is_active)
