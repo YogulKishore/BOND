@@ -1174,7 +1174,7 @@ async def check_phase_transition(session_id: str) -> str:
             # Both people don't need to be online simultaneously — bridging is async-safe.
             msgs = [t.message_count or 0 for t in threads]
             both_have_enough = all(m >= 6 for m in msgs)
-            analysis_ready = (session.analysis_ready_count or 0) >= 2
+            analysis_ready = (session.analysis_ready_count or 0) >= 1
 
             if both_have_enough and analysis_ready:
                 session.mediation_phase = "bridging"
