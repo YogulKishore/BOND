@@ -253,9 +253,13 @@ export default function Dashboard() {
   }
 
   const activeSessions = recentSessions.filter(s => s.is_active)
-  const partnerStartedSession = activeSessions.find(
-    s => s.session_type === 'shared' && s.initiated_by && s.initiated_by !== userId
-  )
+  const partnerStartedSession = activeSessions.find(s => {
+    if (s.session_type !== 'shared') return false
+    if (!s.initiated_by || s.initiated_by === userId) return false
+    // Only show if started in the last 30 minutes
+    const ageMs = Date.now() - new Date(s.created_at).getTime()
+    return ageMs < 30 * 60 * 1000
+  })
   const pastSessions = recentSessions.filter(s => !s.is_active)
 
   // ── Sidebar content (desktop left, or full page sections on mobile) ────────
