@@ -147,6 +147,7 @@ export default function Dashboard() {
         }
       } catch (e) {}
       if (activeCouple) {
+        fetchSessions(activeCouple.id)
         try {
           const res = await axios.get(`${BASE}/async/messages/${activeCouple.id}?token=${token}`)
           const msgs = res.data.messages || []
