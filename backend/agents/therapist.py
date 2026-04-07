@@ -105,8 +105,8 @@ NEVER ask "what led to", "why did you", "what made you" — motivation probing
 NEVER ask "what did you wish", "what did you want", "what did you hope" — projection
 NEVER ask "what would help", "what do you think would happen if" — coaching
 NEVER ask about feelings, motivations, or what things meant to them
-NEVER comfort ("that sounds hard", "understandable", "that must be tough")
-NEVER name their emotion ("frustrated", "anxious", "hurt", "scared")
+You MAY briefly acknowledge emotion ("that's a lot to carry", "yeah that stings") but ONLY if followed immediately by an event-following question — never as a standalone response
+NEVER name their emotion clinically ("frustrated", "anxious", "hurt", "scared") — use their own words instead
 NEVER summarise, conclude, or hint at a pattern
 NEVER ask two things at once
 NEVER follow a topic that isn't about their partner
@@ -1145,7 +1145,6 @@ async def get_ai_response(
                     (r'^Totally understandable', ""),
                     (r'^Understandable[,\s]', ""),
                     (r'^Of course[,\s]', ""),
-                    (r'^Absolutely[,\s]', ""),
                 ]
                 for _pat, _rep in _subs:
                     _new = _sre.sub(_pat, _rep, text, count=1, flags=_sre.IGNORECASE)
@@ -1156,26 +1155,23 @@ async def get_ai_response(
                         print(f"[SHARED POST] opener stripped via: {_pat}")
                         break
 
-                # Story phase: strip comfort/validation sentences entirely
+                # Story phase: strip coaching questions only
                 if mediation_phase == "listening":
                     import re as _sre2
-                    _comfort = [
-                        r"[Tt]hat'?s? (really |quite )?(understandable|tough|hard|difficult|frustrating|stressful|overwhelming)[.,]?",
-                        r"[Ii]t'?s? (really |quite )?(understandable|tough|hard|natural)[.,]?",
-                        r"[Ii]t (can|must) be (really |quite )?(hard|tough|difficult|frustrating)[.,]?",
-                        r"[Yy]ou'?re? (doing|handling|managing) (really )?(well|okay|alright)[.,]?",
-                    ]
-                    for _cp in _comfort:
-                        _cleaned = _sre2.sub(_cp, '', text, flags=_sre2.IGNORECASE).strip().lstrip(',. ')
-                        if _cleaned and len(_cleaned) > 10 and _cleaned != text:
-                            text = _cleaned[0].upper() + _cleaned[1:]
-                            print(f"[STORY POST] comfort phrase stripped")
                     # Strip "what do you think" questions — coaching banned in story
                     _think_pat = r'[Ww]hat do you think[^?]*\?'
                     _think_cleaned = _sre2.sub(_think_pat, '', text, flags=_sre2.IGNORECASE).strip().rstrip(',. ')
                     if _think_cleaned and len(_think_cleaned) > 10 and _think_cleaned != text:
                         text = _think_cleaned[0].upper() + _think_cleaned[1:]
                         print(f"[STORY POST] 'what do you think' stripped")
+                    # Strip feelings questions
+                    for _fp in [r'[Ww]hat\'?s? been going through your mind[^?]*\?',
+                                r'[Hh]ow does that land[^?]*\?',
+                                r'[Hh]ow (have|are) you been (handling|managing|dealing with)[^?]*\?']:
+                        _fc = _sre2.sub(_fp, '', text, flags=_sre2.IGNORECASE).strip().rstrip(',. ')
+                        if _fc and len(_fc) > 10 and _fc != text:
+                            text = _fc[0].upper() + _fc[1:]
+                            print(f"[STORY POST] feelings question stripped")
 
                 # Integration/resolution phase: strip coaching patterns and enforce limits
                 print(f"[POST CHECK] phase={mediation_phase} text_len={len(text)}")
