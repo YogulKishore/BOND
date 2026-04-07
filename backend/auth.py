@@ -100,11 +100,12 @@ def join_couple(db: Session, user_id: str, invite_code: str) -> dict:
 
     for c in user.couples[:]:
         if len(c.users) == 1:
-            user.couples.remove(c)
-            # Delete dependent rows first to avoid FK violations in Postgres
+            # Delete dependent rows first via raw SQL to avoid FK violations in Postgres
+            # Don't use ORM remove() as it conflicts with the manual user_couple deletion
             db.execute(text("DELETE FROM memories WHERE couple_id = :cid"), {"cid": c.id})
             db.execute(text("DELETE FROM user_couple WHERE couple_id = :cid"), {"cid": c.id})
-            db.delete(c)
+            db.execute(text("DELETE FROM couples WHERE id = :cid"), {"cid": c.id})
+            db.expire(user)  # force SQLAlchemy to re-read user.couples from DB
 
     user.couples.append(couple)
     db.commit()
