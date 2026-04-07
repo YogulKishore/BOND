@@ -100,7 +100,7 @@ If they're mid-story, keep following. Don't pull them sideways. If they're circl
 The system moves them out of this stage. You don't. Just receive.
 
 HARD RULES:
-NEVER repeat their words back as a sentence fragment
+NEVER ask "what do you think" — always banned in story phase
 NEVER ask "what led to", "why did you", "what made you" — motivation probing
 NEVER ask "what did you wish", "what did you want", "what did you hope" — projection
 NEVER ask "what would help", "what do you think would happen if" — coaching
@@ -1170,6 +1170,12 @@ async def get_ai_response(
                         if _cleaned and len(_cleaned) > 10 and _cleaned != text:
                             text = _cleaned[0].upper() + _cleaned[1:]
                             print(f"[STORY POST] comfort phrase stripped")
+                    # Strip "what do you think" questions — coaching banned in story
+                    _think_pat = r'[Ww]hat do you think[^?]*\?'
+                    _think_cleaned = _sre2.sub(_think_pat, '', text, flags=_sre2.IGNORECASE).strip().rstrip(',. ')
+                    if _think_cleaned and len(_think_cleaned) > 10 and _think_cleaned != text:
+                        text = _think_cleaned[0].upper() + _think_cleaned[1:]
+                        print(f"[STORY POST] 'what do you think' stripped")
 
                 # Integration/resolution phase: strip coaching patterns and enforce limits
                 print(f"[POST CHECK] phase={mediation_phase} text_len={len(text)}")

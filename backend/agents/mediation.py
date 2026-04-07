@@ -919,11 +919,14 @@ CONFIRMED SUMMARY: {story_summary}
 NEW MESSAGE: {message}
 
 Classify the intent of this new message. Return ONLY one word:
-- continuation — they are adding more information or context to their story
-- meta — they are asking what is happening, what the AI is doing, or why it paused
-- confirm — they are confirming or agreeing with the summary again
-- correction — they are correcting or changing something in the summary
+- continuation — they are clearly adding new specific information to their story
+- meta — they are asking what is happening or why BOND paused
+- confirm — they are confirming, agreeing, or being vague/uncertain ("idk", "maybe", "i guess", "could be anything", "yea", "yup", "yeah", "sure")
+- correction — they are explicitly correcting a specific fact in the summary
 - other — unrelated or general chat
+
+When in doubt between confirm and correction — return confirm.
+Vague responses like "idk", "maybe", "could be anything" are ALWAYS confirm.
 
 One word only."""
 
