@@ -102,6 +102,7 @@ export default function Dashboard() {
   })
   const [recentSessions, setRecentSessions] = useState([])
   const [hasUnreadAsync, setHasUnreadAsync] = useState(false)
+  const [partnerSession, setPartnerSession] = useState(null) // active shared session started by partner
   const [sessionsLoading, setSessionsLoading] = useState(false)
 
   const [joinCode, setJoinCode] = useState('')
@@ -251,6 +252,9 @@ export default function Dashboard() {
   }
 
   const activeSessions = recentSessions.filter(s => s.is_active)
+  const partnerStartedSession = activeSessions.find(
+    s => s.session_type === 'shared' && s.initiated_by && s.initiated_by !== userId
+  )
   const pastSessions = recentSessions.filter(s => !s.is_active)
 
   // ── Sidebar content (desktop left, or full page sections on mobile) ────────
@@ -370,6 +374,34 @@ export default function Dashboard() {
   // ── Session actions ────────────────────────────────────────────────────────
   const SessionActions = () => (
     <div className="space-y-3">
+
+      {/* Partner started a session — notification card */}
+      {partnerStartedSession && (
+        <div className="w-full flex items-center gap-4 bg-terra-dim border border-terra/20 rounded-2xl p-4 animate-fade-up">
+          <div className="w-10 h-10 rounded-xl bg-terra/20 flex items-center justify-center flex-shrink-0">
+            <span className="font-display text-terra text-sm italic">!</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-ink text-sm font-medium">{activeCouple?.partner || 'Your partner'} started a session</p>
+            <p className="text-ink-ghost text-xs mt-0.5">They're waiting — join to talk with BOND together</p>
+          </div>
+          <div className="flex gap-2 flex-shrink-0">
+            <button
+              onClick={() => navigate(`/chat/shared?couple_id=${activeCouple?.id}&session_id=${partnerStartedSession.id}`)}
+              className="bg-terra text-parchment text-xs px-3 py-2 rounded-xl font-medium hover:opacity-90 transition"
+            >
+              Join
+            </button>
+            <button
+              onClick={() => setRecentSessions(prev => prev.filter(s => s.id !== partnerStartedSession.id))}
+              className="text-ink-ghost text-xs px-3 py-2 rounded-xl hover:text-ink-muted transition"
+            >
+              Later
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Individual */}
       <button
         onClick={() => navigate(`/chat/individual?couple_id=${activeCouple?.id || 'solo'}`)}

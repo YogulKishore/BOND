@@ -46,9 +46,6 @@ import random
 
 router = APIRouter()
 
-# ── In-memory guard — prevents concurrent analysis tasks for the same session ──
-_analysis_running: set[str] = set()
-
 
 # ─────────────────────────────────────────────
 # HELPERS
@@ -710,14 +707,8 @@ async def _post_response_tasks(
         asyncio.create_task(_update_thread_summary(thread_id))
 
     combined = _combined_message_count(session_id)
-    if combined >= 10 and mediation_phase == "listening" and session_id not in _analysis_running:
-        async def _guarded_analysis(sid: str):
-            _analysis_running.add(sid)
-            try:
-                await analyze_both_threads(sid)
-            finally:
-                _analysis_running.discard(sid)
-        asyncio.create_task(_guarded_analysis(session_id))
+    if combined >= 10 and mediation_phase == "listening":
+        asyncio.create_task(analyze_both_threads(session_id))
 
     # Resolution beat-2 — uses DB flag so it fires exactly once per thread
     if mediation_phase == "resolution":
@@ -734,30 +725,28 @@ async def _post_response_tasks(
                 session_id=session_id, user_id=user_id,
                 beat_1=beat_1, reaction=user_message,
             )
-            if not beat_2:
-                # LLM failed — leave phase as resolution, retry on next message
-                print(f"[BEAT-2] generation failed, will retry thread={thread_id[:8]}")
-            else:
-                db = SessionLocal()
-                try:
-                    t = db.query(Thread).filter(Thread.id == thread_id).first()
-                    if t:
-                        t.resolution_beat2_sent = True
-                    s = db.query(Session).filter(Session.id == session_id).first()
-                    if s and s.mediation_phase == "resolution":
-                        s.mediation_phase = "integration"
-                        print(f"[PHASE] {session_id[:8]} → integration")
+            db = SessionLocal()
+            try:
+                t = db.query(Thread).filter(Thread.id == thread_id).first()
+                if t:
+                    t.resolution_beat2_sent = True
+                s = db.query(Session).filter(Session.id == session_id).first()
+                if s and s.mediation_phase == "resolution":
+                    s.mediation_phase = "integration"
+                    print(f"[PHASE] {session_id[:8]} → integration")
+                if beat_2:
                     db.add(Message(
                         id=generate_id(), session_id=session_id, thread_id=thread_id,
                         sender_id="ai", content=beat_2, is_private=True,
                     ))
-                    db.commit()
-                finally:
-                    db.close()
+                db.commit()
+            finally:
+                db.close()
 
-                mediation_phase = "integration"
+            mediation_phase = "integration"
+            if beat_2:
                 await _send_ws(websocket, {"type": "resolution", "role": "ai", "content": beat_2})
-                await _send_ws(websocket, {"type": "phase_change", "phase": "integration"})
+            await _send_ws(websocket, {"type": "phase_change", "phase": "integration"})
 
         elif beat2_sent:
             mediation_phase = "integration"
@@ -914,14 +903,8 @@ async def shared_session_ws(websocket: WebSocket, session_id: str, token: str):
                 if user_msg_count % 3 == 0:
                     asyncio.create_task(_update_thread_summary(thread_id))
                 combined = _combined_message_count(session_id)
-                if combined >= 10 and mediation_phase == "listening" and session_id not in _analysis_running:
-                    async def _guarded_analysis2(sid: str):
-                        _analysis_running.add(sid)
-                        try:
-                            await analyze_both_threads(sid)
-                        finally:
-                            _analysis_running.discard(sid)
-                    asyncio.create_task(_guarded_analysis2(session_id))
+                if combined >= 10 and mediation_phase == "listening":
+                    asyncio.create_task(analyze_both_threads(session_id))
                 continue
 
             ai_response = await get_ai_response(
@@ -1008,6 +991,7 @@ def get_sessions(couple_id: str, token: str):
                 ),
                 "is_active": s.is_active,
                 "mediation_phase": s.mediation_phase,
+                "initiated_by": s.initiated_by,
             })
 
         return {"sessions": result[:10]}
@@ -1023,18 +1007,6 @@ def create_session(couple_id: str, session_type: str, token: str):
 
     db = SessionLocal()
     try:
-        # For shared sessions — require exactly 2 onboarded members
-        if session_type == "shared":
-            from models.database import Couple
-            couple = db.query(Couple).filter(Couple.id == couple_id).first()
-            if not couple:
-                return {"error": "Couple not found"}
-            members = couple.users
-            if len(members) < 2:
-                return {"error": "shared_needs_partner", "message": "Your partner hasn't joined yet. Share your invite code with them first."}
-            if not all(u.is_onboarded for u in members):
-                return {"error": "shared_needs_onboarding", "message": "Both partners need to complete onboarding before starting a shared session."}
-
         existing = db.query(Session).filter(
             Session.couple_id == couple_id,
             Session.session_type == session_type,
