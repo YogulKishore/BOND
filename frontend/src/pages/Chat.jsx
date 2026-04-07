@@ -158,6 +158,8 @@ export default function Chat() {
               mediationPhaseRef.current = res.data.mediation_phase
               setMediationPhase(res.data.mediation_phase)
             }
+            // Update URL so partner can see same session_id
+            window.history.replaceState(null, '', `/chat/shared?couple_id=${coupleId}&session_id=${wsSessionId}`)
             // Only wipe the stored key if the backend gave us a brand-new session
             const storedId = localStorage.getItem(sessionStorageKey)
             if (storedId && storedId !== wsSessionId) {
@@ -254,12 +256,13 @@ export default function Chat() {
     initSession()
     const handleVisibility = () => {
       if (document.visibilityState === 'hidden') {
-        // Start a short timer — if still hidden after 600ms, treat as real close
+        // Only auto-end individual sessions on tab close
+        // Shared sessions stay active until explicitly ended by user
+        if (sessionType === 'shared') return
         _endTimerRef.current = setTimeout(() => {
           triggerSessionEnd(realSessionIdRef.current || sessionId)
         }, 600)
       } else {
-        // Became visible again (reload) — cancel the end
         if (_endTimerRef.current) clearTimeout(_endTimerRef.current)
       }
     }
