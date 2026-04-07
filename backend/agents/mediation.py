@@ -830,26 +830,20 @@ Generate a private investigation brief — what BOND needs to understand to medi
 NOT a list of questions. A list of INTENTIONS — what understanding BOND is pursuing.
 BOND will surface these naturally through conversation.
 
-Three buckets, 2-3 specific intentions each. Specific to THIS story. Nothing generic.
+Three buckets, 1 intention each — the single most important thing to understand. Specific to THIS story.
 
 Return ONLY valid JSON:
 {{
   "emotional_register": "open / guarded / deflecting / analytical",
   "pacing": "slow / normal / fast — how quickly to move based on their openness",
   "bucket_a_their_side": [
-    "what this person's behaviour or choices reveal about them",
-    "what drove their decisions in this situation",
-    "what they're protecting or avoiding"
+    "the single most important thing about this person's behaviour or choices to understand"
   ],
   "bucket_b_their_read": [
-    "how this person interprets the other person's behaviour",
-    "what they think motivates the other person",
-    "what assumptions they're making"
+    "the single most important assumption they're making about the other person"
   ],
   "bucket_c_the_dynamic": [
-    "what the interaction pattern looks like in practice",
-    "what each person does when it goes wrong",
-    "how it ends and what stays unresolved"
+    "the single most important thing about how this interaction pattern plays out"
   ]
 }}
 
@@ -867,15 +861,13 @@ Generate a depth brief — what BOND needs to understand about the emotional rea
 Return ONLY valid JSON:
 {{
   "depth_intentions": [
-    "what this situation costs them — what goes unsaid or builds up",
-    "what they tell themselves about why this keeps happening",
-    "what they actually want from the other person that they haven't said",
-    "what they're afraid would happen if they said what they really think"
+    "the most important unspoken emotional truth — what this situation costs them or what they haven't said",
+    "what they actually want from the other person that they haven't directly asked for"
   ],
   "handle_with_care": "one sentence — anything BOND should be careful about with this person"
 }}
 
-Specific to what this person actually shared.\
+Specific to what this person actually shared. Maximum 2 intentions.\
 """
 
 STORY_SUMMARY_PROMPT = """\
