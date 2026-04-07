@@ -190,6 +190,10 @@ async def _send_resolution_to_thread(
         t = db.query(Thread).filter(Thread.id == thread_id).first()
         if t and (t.resolution_message or t.resolution_pending):
             return  # already delivered or in progress
+        # Mark as in-progress before async LLM call to prevent race condition
+        if t:
+            t.resolution_pending = "generating"
+            db.commit()
     finally:
         db.close()
 
