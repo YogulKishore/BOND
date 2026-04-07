@@ -34,10 +34,27 @@ export default function CheckIn() {
         session_type: sessionType,
       })
     } catch (e) { console.error(e) }
+
+    // For shared sessions — create/get the session now so we have the ID
+    if (sessionType === 'shared') {
+      try {
+        const res = await axios.post(`${BASE}/sessions/create?couple_id=${coupleId}&session_type=shared&token=${localStorage.getItem('token')}`)
+        const sessionId = res.data.session_id
+        navigate(`/chat/${sessionType}?couple_id=${coupleId}&session_id=${sessionId}`)
+        return
+      } catch (e) { console.error(e) }
+    }
+
     navigate(`/chat/${sessionType}?couple_id=${coupleId}`)
   }
 
   const handleSkip = () => {
+    if (sessionType === 'shared') {
+      axios.post(`${BASE}/sessions/create?couple_id=${coupleId}&session_type=shared&token=${localStorage.getItem('token')}`)
+        .then(res => navigate(`/chat/${sessionType}?couple_id=${coupleId}&session_id=${res.data.session_id}`))
+        .catch(() => navigate(`/chat/${sessionType}?couple_id=${coupleId}`))
+      return
+    }
     navigate(`/chat/${sessionType}?couple_id=${coupleId}`)
   }
 
