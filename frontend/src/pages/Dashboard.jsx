@@ -165,6 +165,13 @@ export default function Dashboard() {
   useEffect(() => { if (activeCouple) fetchSessions(activeCouple.id) }, [activeCouple?.id])
   useEffect(() => { if (activeCouple) fetchSessions(activeCouple.id) }, [])
 
+  // Poll for partner session every 10 seconds
+  useEffect(() => {
+    if (!activeCouple) return
+    const interval = setInterval(() => fetchSessions(activeCouple.id), 10000)
+    return () => clearInterval(interval)
+  }, [activeCouple?.id])
+
   const copyCode = (code, id) => {
     navigator.clipboard.writeText(code)
     setCopied(id)
