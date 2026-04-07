@@ -113,8 +113,8 @@ Analyze what is actually happening between them. Return ONLY valid JSON — no p
   "dynamic": "One sentence: the core dynamic keeping them stuck.",
   "misunderstanding": "The intention vs impact gap for both people — what each intends and how it lands on the other.",
   "path_forward": "One small shift that could break the loop — not a solution, a direction toward it.",
-  "bridge_question_a": "One question for Person A that points INWARD — toward their own behaviour or choice, not toward what their partner felt. Must be grounded in something A actually said or did. Never ask 'what do you think they felt' or 'how do you think they reacted'. Example: 'When you stopped texting and waited — what were you hoping would happen?'",
-  "bridge_question_b": "Same for Person B — inward-facing, grounded in what B said or did. Never ask about partner's feelings or reactions.",
+  "bridge_question_a": "One question for Person A that points INWARD — toward their own behaviour or choice, not toward what their partner felt. Must be grounded in something A actually said or did. Never ask 'what do you think they felt' or 'how do you think they reacted'. Never use 'Person A' or 'Person B' — speak directly as if asking them. Example: 'When you stopped texting and waited — what were you hoping would happen?'",
+  "bridge_question_b": "Same for Person B — inward-facing, grounded in what B said or did. Never ask about partner's feelings or reactions. Never use 'Person A' or 'Person B'.",
   "ready_for_bridge": true or false — true ONLY if both four-layer models are clear and the complementary pattern is specific. False if still surface-level.,
   "confidence": "low / medium / high"
 }}

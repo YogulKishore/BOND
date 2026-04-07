@@ -203,6 +203,7 @@ export default function Chat() {
           } else if (data.type === 'bridge') {
             setLoading(false)
             setMessages(prev => [...prev, { ...data, role: 'bridge' }])
+            setShowConsentPrompt(true)
           } else if (data.type === 'resolution') {
             setLoading(false); setConsentPending(false)
             setMessages(prev => [...prev, { ...data, role: 'resolution' }])
