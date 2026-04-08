@@ -1091,7 +1091,7 @@ async def get_ai_response(
                 msgs.append(SystemMessage(content=brief))
             msgs.append(HumanMessage(content=f"{speaker_name}: {message}"))
 
-            llm = get_llm(strong=mediation_phase in ("integration", "resolution", "bridging"))
+            llm = get_llm(strong=mediation_phase in ("resolution",))
             try:
                 response = await llm.ainvoke(msgs)
                 text = response.content.strip()
@@ -1128,11 +1128,9 @@ async def get_ai_response(
                     (r'^Feeling like you ', ""),
                     (r'^When you feel like', ""),
                     (r'^When you\'re feeling', ""),
-                    (r'^You\'re feeling like', ""),
+                    (r'^You\'re feeling like', "You feel like"),
+                    (r'^You\'re feeling', ""),
                     (r'^Being the only one', ""),
-                    (r'^When he suddenly', ""),
-                    (r'^When she ', ""),
-                    (r'^When you ', ""),
                     (r'^You mentioned[,\s]', ""),
                     (r'^You mentioned that', ""),
                     (r'^\w+,\s+it\s+', ""),  # strips "Meera, it..." / "Arjun, it..."
