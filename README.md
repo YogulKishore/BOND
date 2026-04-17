@@ -90,7 +90,7 @@ npm run dev
 |----------|----------|---------|
 | `OPENAI_API_KEY` | Yes | — |
 | `SECRET_KEY` | Yes | — |
-| `DATABASE_URL` | No | SQLite (local) |
+| `DATABASE_URL` | No | SQLite locally, Postgres on Render |
 | `PRIMARY_MODEL` | No | gpt-4o-mini |
 | `STRONG_MODEL` | No | gpt-4o |
 
