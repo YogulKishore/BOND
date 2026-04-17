@@ -162,6 +162,38 @@ First, ask naturally and warmly if they're open to hearing it.
 One or two sentences only.
 Example: "I've been sitting with everything you've shared, and I think I'm starting to see something. Would you be open to hearing what I'm noticing?" """
 
+INDIVIDUAL_REFLECTION_PROMPT = """You are BOND. You've been listening privately to one person about something happening in their relationship.
+You only have their side. You don't know what the other person thinks or feels.
+
+Here is everything they shared:
+{conversation}
+
+Their story summary: {story_summary}
+What you understand about their behaviour: {bucket_a}
+How they read their partner: {bucket_b}
+The dynamic as they described it: {bucket_c}
+What's deeper for them: {depth_intentions}
+
+Your job: share what you've noticed about THIS person — honestly, warmly, specifically.
+
+This is not a two-sided analysis. You don't have the other person's story. So you're not naming the full loop.
+You're naming what you see in how THIS person is responding to the situation — the pattern, the cost, and what might be underneath it.
+
+STRUCTURE:
+1. Name what they've been experiencing — in their words, specific to what they shared
+2. Name the pattern in how they've been responding — what they keep doing, what it might be protecting them from
+3. Name the cost — what that pattern might be costing them in this situation, without blame
+4. End with one honest observation or question — something that opens space, not closes it
+
+RULES:
+- Only speak from what they actually shared — never invent or assume
+- Never pretend you know what the partner thinks or feels
+- Don't give advice or tell them what to do
+- Don't soften it so much it loses its truth — be warm but honest
+- Use their actual words and specific details — never generic relationship language
+- 4-5 sentences maximum
+- Never use their partner's name — "your partner" or "they" only"""
+
 SHARED_RESOLUTION_PROMPT = """You are BOND. You have listened to both sides of this situation privately.
 
 Here is what you know about THIS person:
@@ -1223,6 +1255,67 @@ async def record_bridge_consent(session_id: str, user_id: str) -> bool:
         threads = db.query(Thread).filter(Thread.session_id == session_id).all()
         user_ids = [t.user_id for t in threads]
         return all(uid in consents for uid in user_ids)
+    finally:
+        db.close()
+
+
+async def generate_individual_reflection(thread_id: str) -> str | None:
+    """
+    Generates a one-sided reflection for individual sessions.
+    Uses only what this person shared — no partner data.
+    Delivered when investigation phase is complete.
+    """
+    db = SessionLocal()
+    try:
+        thread = db.query(Thread).filter(Thread.id == thread_id).first()
+        if not thread:
+            return None
+
+        messages = db.query(Message).filter(
+            Message.thread_id == thread_id
+        ).order_by(Message.created_at).all()
+
+        conversation = "\n".join([
+            f"{'BOND' if m.sender_id == 'ai' else 'Person'}: {m.content}"
+            for m in messages
+        ])
+
+        story_summary = thread.story_summary or ""
+
+        # Extract brief intentions for context
+        bucket_a = bucket_b = bucket_c = ""
+        if thread.investigation_brief_json:
+            try:
+                brief = json.loads(thread.investigation_brief_json)
+                bucket_a = "; ".join(brief.get("bucket_a_their_side", []))
+                bucket_b = "; ".join(brief.get("bucket_b_their_read", []))
+                bucket_c = "; ".join(brief.get("bucket_c_the_dynamic", []))
+            except Exception:
+                pass
+
+        depth_intentions = ""
+        if thread.depth_brief_json:
+            try:
+                depth = json.loads(thread.depth_brief_json)
+                depth_intentions = "; ".join(depth.get("depth_intentions", []))
+            except Exception:
+                pass
+
+        prompt = INDIVIDUAL_REFLECTION_PROMPT.format(
+            conversation=conversation,
+            story_summary=story_summary,
+            bucket_a=bucket_a,
+            bucket_b=bucket_b,
+            bucket_c=bucket_c,
+            depth_intentions=depth_intentions,
+        )
+
+        llm = get_llm(temperature=0.5, strong=True)
+        response = await llm.ainvoke([HumanMessage(content=prompt)])
+        return response.content.strip()
+    except Exception as e:
+        print(f"[INDIVIDUAL REFLECTION ERROR] {e}")
+        return None
     finally:
         db.close()
 

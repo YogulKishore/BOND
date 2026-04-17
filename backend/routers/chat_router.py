@@ -11,6 +11,7 @@ from agents.mediation import (
     classify_post_confirmation_intent,
     should_offer_close,
     generate_closing_reflection,
+    generate_individual_reflection,
 )
 from auth import decode_token
 import asyncio
@@ -220,6 +221,50 @@ async def send_message(req: MessageRequest):
         pacing = inv_state.get("pacing", "normal")
         handle_with_care = inv_state.get("handle_with_care", "")
 
+        # Check if we need to deliver the individual reflection
+        if thread_id and inv_phase == "complete":
+            db_ref = SessionLocal()
+            try:
+                t = db_ref.query(Thread).filter(Thread.id == thread_id).first()
+                has_reflection = bool(t.resolution_message) if t else False
+            finally:
+                db_ref.close()
+
+            if not has_reflection:
+                # Generate and deliver individual reflection
+                reflection = await generate_individual_reflection(thread_id)
+                if reflection:
+                    db_ref2 = SessionLocal()
+                    try:
+                        t = db_ref2.query(Thread).filter(Thread.id == thread_id).first()
+                        if t:
+                            t.resolution_message = reflection
+                            db_ref2.commit()
+                        ai_msg = Message(
+                            id=generate_id(),
+                            session_id=session.id,
+                            thread_id=thread_id,
+                            sender_id="ai",
+                            content=reflection,
+                            is_private=True
+                        )
+                        db_ref2.add(ai_msg)
+                        db_ref2.commit()
+                    finally:
+                        db_ref2.close()
+                    return {"response": reflection, "session_id": session.id, "type": "reflection"}
+
+        # Determine mediation phase for get_ai_response
+        individual_mediation_phase = "listening"
+        if thread_id and inv_phase == "complete":
+            db_ph = SessionLocal()
+            try:
+                t = db_ph.query(Thread).filter(Thread.id == thread_id).first()
+                if t and t.resolution_message:
+                    individual_mediation_phase = "integration"
+            finally:
+                db_ph.close()
+
         response = await get_ai_response(
             session_id=session.id if session else req.session_id,
             couple_id=req.couple_id,
@@ -228,7 +273,7 @@ async def send_message(req: MessageRequest):
             session_type="shared",
             recent_messages=all_messages,
             user_id=user_id,
-            mediation_phase="listening",
+            mediation_phase=individual_mediation_phase,
             thread_id=thread_id,
             user_msg_count=user_msg_count,
         )
@@ -242,7 +287,7 @@ async def send_message(req: MessageRequest):
                 asyncio.create_task(mark_intention_done(thread_id, next_key, "answered"))
 
         # Check for closing
-        if thread_id and inv_phase in ("complete",):
+        if thread_id and individual_mediation_phase == "integration":
             db_int = SessionLocal()
             try:
                 t = db_int.query(Thread).filter(Thread.id == thread_id).first()

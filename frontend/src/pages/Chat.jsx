@@ -301,7 +301,11 @@ export default function Chat() {
           message: userMsg, session_type: sessionType, speaker_name: name,
           couple_id: coupleId, session_id: realSessionId || '', token, history: messages.slice(-10)
         })
-        setMessages(prev => [...prev, { role: 'ai', sender: 'BOND', content: res.data.response }])
+        setMessages(prev => [...prev, { 
+          role: res.data.type === 'reflection' ? 'reflection' : 'ai', 
+          sender: 'BOND', 
+          content: res.data.response 
+        }])
         if (res.data.session_id) { setRealSessionId(res.data.session_id); realSessionIdRef.current = res.data.session_id; localStorage.setItem(sessionStorageKey, res.data.session_id) }
       } catch {
         setSendError(true)
@@ -472,6 +476,19 @@ export default function Chat() {
                 </div>
               )}
 
+              {/* Individual session reflection */}
+              {msg.role === 'reflection' && (
+                <div className="my-4">
+                  <div className="bg-white/80 border border-terra/20 rounded-2xl px-5 py-5 shadow-soft">
+                    <div className="flex items-center gap-2 mb-3">
+                      <SparkleIcon />
+                      <p className="text-terra text-2xs font-medium uppercase tracking-widest">BOND · What I'm noticing</p>
+                    </div>
+                    <p className="text-ink text-sm leading-relaxed font-display">{msg.content}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Closing */}
               {msg.role === 'closing' && (
                 <div className="flex justify-center my-4">
@@ -483,7 +500,7 @@ export default function Chat() {
               )}
 
               {/* Regular messages */}
-              {!['system', 'phase', 'bridge', 'resolution', 'closing'].includes(msg.role) && (
+              {!['system', 'phase', 'bridge', 'resolution', 'reflection', 'closing'].includes(msg.role) && (
                 <div className={`flex flex-col ${msg.role === 'user' && msg.sender === name ? 'items-end' : 'items-start'}`}>
                   <span className="text-2xs text-ink-ghost mb-1.5 px-1">
                     {msg.role === 'ai' ? 'BOND' : msg.sender}
