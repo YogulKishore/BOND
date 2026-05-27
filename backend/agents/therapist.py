@@ -1302,12 +1302,21 @@ async def get_ai_response(
                 # Fall through to standard pipeline if two-step fails
 
             # ── Session identity block — always first ─────────────────────
+            _self_awareness = (
+                "You are BOND — the one they are talking to right now. This conversation is the session. "
+                "When someone says 'that\'s why I\'m here', 'I came here for help', 'that\'s why I joined' — "
+                "they mean here, with you, in this conversation. "
+                "Never say 'glad you joined therapy', 'hope therapy helps', or anything that treats therapy as somewhere else. "
+                "You are already the person helping them. Respond as someone who is present, not pointing elsewhere."
+            )
             if partner_name:
                 identity_block = (
                     "## SESSION IDENTITY\n"
                     f"You are talking to: {speaker_name}\n"
                     f"Their partner (the only other person in this relationship): {partner_name}\n"
                     f"Session type: {session_type}\n"
+                    "\n"
+                    + _self_awareness + "\n"
                     "\n"
                     f"Anyone mentioned who is not {speaker_name} or {partner_name} is a third party "
                     "(a friend, sibling, colleague, or other person). "
@@ -1321,6 +1330,8 @@ async def get_ai_response(
                     f"You are talking to: {speaker_name}\n"
                     "Their partner has not linked yet — refer to them as 'your partner' or 'they'.\n"
                     f"Session type: {session_type}\n"
+                    "\n"
+                    + _self_awareness + "\n"
                     "\n"
                     "Anyone else mentioned is a third party. Do not follow those threads."
                 )
