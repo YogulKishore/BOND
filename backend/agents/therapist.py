@@ -903,8 +903,8 @@ def build_history(messages: list, speaker_name: str = "User") -> list:
         if msg.sender_id == "ai":
             history.append(AIMessage(content=msg.content))
         else:
-            label = msg.sender_id if len(msg.sender_id) < 40 else speaker_name
-            history.append(HumanMessage(content=f"{label}: {msg.content}"))
+            # Always label with the speaker name — never expose raw UUIDs to the model
+            history.append(HumanMessage(content=f"{speaker_name}: {msg.content}"))
     return history
 
 
@@ -1089,6 +1089,7 @@ async def get_ai_response(
     session_type: str,
     recent_messages: list,
     user_id: str = None,
+    partner_name: str = None,
     partner_summary: str = None,
     mediation_phase: str = "listening",
     thread_id: str = None,
@@ -1300,7 +1301,31 @@ async def get_ai_response(
                     return text
                 # Fall through to standard pipeline if two-step fails
 
-            msgs = [SystemMessage(content=prompt)]
+            # ── Session identity block — always first ─────────────────────
+            if partner_name:
+                identity_block = (
+                    "## SESSION IDENTITY\n"
+                    f"You are talking to: {speaker_name}\n"
+                    f"Their partner (the only other person in this relationship): {partner_name}\n"
+                    f"Session type: {session_type}\n"
+                    "\n"
+                    f"Anyone mentioned who is not {speaker_name} or {partner_name} is a third party "
+                    "(a friend, sibling, colleague, or other person). "
+                    "Do NOT follow threads about third parties. "
+                    f"Only {partner_name} is the partner. Never invent behaviour for {partner_name} "
+                    "— only reflect what {speaker_name} has described."
+                )
+            else:
+                identity_block = (
+                    "## SESSION IDENTITY\n"
+                    f"You are talking to: {speaker_name}\n"
+                    "Their partner has not linked yet — refer to them as 'your partner' or 'they'.\n"
+                    f"Session type: {session_type}\n"
+                    "\n"
+                    "Anyone else mentioned is a third party. Do not follow those threads."
+                )
+
+            msgs = [SystemMessage(content=identity_block), SystemMessage(content=prompt)]
             msgs += history_msgs
             # Brief injected last — highest influence on output
             if brief:

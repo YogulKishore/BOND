@@ -118,6 +118,26 @@ async def send_message(req: MessageRequest):
     finally:
         db.close()
 
+    # ── Resolve user and partner names from DB ───────────────────────────────
+    user_name = req.speaker_name  # frontend-supplied fallback
+    partner_name = None
+    if user_id and req.couple_id != "solo":
+        db_names = SessionLocal()
+        try:
+            from models.database import Couple, User
+            couple_obj = db_names.query(Couple).filter(Couple.id == req.couple_id).first()
+            if couple_obj:
+                current_user = next((u for u in couple_obj.users if u.id == user_id), None)
+                partner_user = next((u for u in couple_obj.users if u.id != user_id), None)
+                if current_user:
+                    user_name = current_user.name
+                if partner_user:
+                    partner_name = partner_user.name
+        except Exception as e:
+            print(f"[IDENTITY LOOKUP] failed (non-fatal): {e}")
+        finally:
+            db_names.close()
+
     # ── Investigation state machine (individual sessions) ────────────────────
     if thread_id and req.session_type == "individual":
         inv_state = get_investigation_state(thread_id)
@@ -304,9 +324,10 @@ async def send_message(req: MessageRequest):
     response = await get_ai_response(
         session_id=session.id if session else req.session_id,
         couple_id=req.couple_id,
-        speaker_name=req.speaker_name,
+        speaker_name=user_name,
+        partner_name=partner_name,
         message=req.message,
-        session_type=req.session_type,          # now correctly "individual" or "shared"
+        session_type=req.session_type,
         recent_messages=all_messages,
         user_id=user_id,
         mediation_phase=mediation_phase,
