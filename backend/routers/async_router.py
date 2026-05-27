@@ -92,8 +92,6 @@ def get_async_messages(couple_id: str, token: str):
             Message.session_id == session.id
         ).order_by(Message.created_at).all()
 
-        has_unread = any(m.sender_id != user_id for m in messages)
-
         result = []
         for m in messages:
             sender = db.query(User).filter(User.id == m.sender_id).first()
@@ -105,53 +103,6 @@ def get_async_messages(couple_id: str, token: str):
                 "created_at": m.created_at.isoformat()
             })
 
-        return {"messages": result, "has_unread": has_unread}
-    finally:
-        db.close()
-
-
-@router.get("/summary/{couple_id}")
-async def get_async_summary(couple_id: str, token: str):
-    user_id = decode_token(token)
-    if not user_id:
-        return {"error": "Invalid token"}
-
-    db = SessionLocal()
-    try:
-        session = db.query(Session).filter(
-            Session.couple_id == couple_id,
-            Session.session_type == "async",
-        ).order_by(Session.created_at.desc()).first()
-
-        if not session:
-            return {"summary": None}
-
-        messages = db.query(Message).filter(
-            Message.session_id == session.id,
-            Message.sender_id != user_id
-        ).order_by(Message.created_at).all()
-
-        if not messages:
-            return {"summary": None}
-
-        combined = "\n".join([m.content for m in messages])
-        prompt = f"Your partner left you these messages:\n\n{combined}\n\nSummarize what they're trying to say in 2-3 warm, empathetic sentences. Don't take sides."
-
-        try:
-            from langchain_openai import ChatOpenAI
-            from langchain_core.messages import HumanMessage
-            from config import get_settings as _get_settings
-            _settings = _get_settings()
-            llm = ChatOpenAI(
-                model=_settings.primary_model,
-                api_key=_settings.openai_api_key,
-                temperature=0.5
-            )
-            resp = await llm.ainvoke([HumanMessage(content=prompt)])
-            summary = resp.content.strip()
-        except Exception as e:
-            print(f"[ASYNC SUMMARY ERROR] {e}")
-            summary = None
-        return {"summary": summary}
+        return {"messages": result}
     finally:
         db.close()

@@ -29,10 +29,7 @@ export default function Async() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
-  const [summary, setSummary] = useState(null)
-  const [loadingSummary, setLoadingSummary] = useState(false)
   const [error, setError] = useState(null)
-  const summaryFetchedRef = useRef(false)
   const markedReadRef = useRef(false)
   const bottomRef = useRef(null)
 
@@ -53,22 +50,9 @@ export default function Async() {
         markedReadRef.current = true
         const readTs = JSON.parse(localStorage.getItem('async_read') || '{}')
         readTs[coupleId] = new Date().toISOString()
-        localStorage.setItem('async_read', JSON.stringify(readTs))        
-        if (res.data.messages?.length > 0 && res.data.has_unread && !summaryFetchedRef.current) {
-          summaryFetchedRef.current = true
-          fetchSummary()
-        }
+        localStorage.setItem('async_read', JSON.stringify(readTs))
       }
     } catch { setError('Could not load messages') }
-  }
-
-  const fetchSummary = async () => {
-    setLoadingSummary(true)
-    try {
-      const res = await axios.get(`${BASE}/async/summary/${coupleId}?token=${token}`)
-      setSummary(res.data.summary)
-    } catch {}
-    setLoadingSummary(false)
   }
 
   const sendMessage = async () => {
@@ -107,25 +91,7 @@ export default function Async() {
           </div>
         )}
 
-        {loadingSummary && (
-          <div className="bg-terra-dim border border-terra/20 rounded-2xl p-4">
-            <p className="text-terra text-2xs font-medium uppercase tracking-widest mb-2">BOND</p>
-            <div className="flex gap-1.5 items-center">
-              {[0, 150, 300].map(delay => (
-                <span key={delay} className="w-1.5 h-1.5 bg-terra/60 rounded-full animate-bounce" style={{ animationDelay: `${delay}ms` }} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {summary && (
-          <div className="bg-terra-dim border border-terra/20 rounded-2xl p-5 animate-slide-up">
-            <p className="text-terra text-2xs font-medium uppercase tracking-widest mb-2">BOND · Summary</p>
-            <p className="text-ink text-sm leading-relaxed font-display italic">{summary}</p>
-          </div>
-        )}
-
-        {messages.length === 0 && !loadingSummary && (
+        {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-12 h-12 rounded-2xl bg-parchment-deep border border-parchment-deeper flex items-center justify-center mb-4">
               <SendIcon />
@@ -175,7 +141,7 @@ export default function Async() {
           </button>
         </div>
         <p className="text-ink-ghost text-2xs mt-2.5 text-center">
-          BOND will summarize your messages for your partner
+          Press Enter to send · Shift+Enter for new line
         </p>
       </div>
     </div>
