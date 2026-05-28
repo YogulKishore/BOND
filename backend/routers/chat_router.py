@@ -20,13 +20,7 @@ import random
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
-_STORY_CLOSERS = [
-    "That helps me understand what's been going on.",
-    "Thank you for sharing that with me.",
-    "I hear you — that gives me a clearer picture.",
-    "That makes sense. Give me a moment.",
-    "Got it — I appreciate you sharing that.",
-]
+_TRANSITION_LINE = "That helps. Let me ask you a few things."
 
 _DONE_SIGNALS = {
     "that's it", "thats it", "that's all", "thats all",
@@ -166,7 +160,7 @@ async def send_message(req: MessageRequest):
                             db3.commit()
                     finally:
                         db3.close()
-                    closer = random.choice(_STORY_CLOSERS)
+                    closer = _TRANSITION_LINE
                     asyncio.create_task(generate_investigation_brief(thread_id))
                     db4 = SessionLocal()
                     try:
